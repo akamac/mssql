@@ -8,17 +8,11 @@ $Data = @([PSCustomObject]@{Name='Joe';Age=21},[PSCustomObject]@{Name='Michael';
 Load-DataRows -DataSet $DataSet -Data $Data
 Invoke-SqlDb -SqlDataAdapter $SqlDataAdapter -Update -DataSet $DataSet
 ```
-## Run a single command
+## Running a single command
 ```
-Invoke-SqlCommand -SqlServer <SQLServerFqdn> -Database <DbName> -CommandType NonQuery -CommandText @'
-UPDATE TableName SET Notes = NULL WHERE Notes IS NOT NULL
-'@
+$Param = @{SqlServer = 'SQLServerFqdn'; Database = 'DbName'}
 
-Invoke-SqlCommand -SqlServer <SQLServerFqdn> -Database <DbName> -CommandType Reader -CommandText @'
-SELECT * FROM TableName
-'@
-
-Invoke-SqlCommand -SqlServer <SQLServerFqdn> -Database <DbName> -CommandType Scalar -CommandText @'
-SELECT MAX(Updated) FROM TableName
-'@
+Invoke-SqlCommand @Param -CommandType NonQuery -CommandText "UPDATE TableName SET Notes = NULL WHERE Notes IS NOT NULL"
+Invoke-SqlCommand @Param -CommandType Reader -CommandText "SELECT * FROM TableName"
+Invoke-SqlCommand @Param -CommandType Scalar -CommandText "SELECT MAX(Updated) FROM TableName"
 ```
