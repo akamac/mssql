@@ -1,6 +1,6 @@
 @{
 	RootModule = 'MSSQL.psm1'
-	ModuleVersion = '1.0.1'
+	ModuleVersion = '1.0.2'
 	GUID = '1c6a21d1-d665-499b-9753-d8908a736c43'
 	Author = 'Alexey Miasoedov'
 	CompanyName = 'Intermedia'
