@@ -114,18 +114,23 @@ function Invoke-SqlCommand {
     )
     $SqlConnectionStringBuilder = New-Object System.Data.SqlClient.SqlConnectionStringBuilder
     $SqlConnectionStringBuilder['Persist Security Info'] = $false
-    
-    if ($Credential) {
-        $Credential.Password.MakeReadOnly()
-        $SqlCredential = New-Object System.Data.SqlClient.SqlCredential($Credential.UserName,$Credential.Password)
-        $SqlConnectionStringBuilder['Credential'] = $SqlCredential
-    } else {
-        $SqlConnectionStringBuilder['Integrated Security'] = $true
-    }
     $SqlConnectionStringBuilder['Initial Catalog'] = $Database
     $SqlConnectionStringBuilder['Data Source'] = $SqlServer #, $Instance -join '\'
     #$SqlConnectionStringBuilder['TrustServerCertificate'] = $true
-    $SqlConnection = New-Object System.Data.SqlClient.SqlConnection($SqlConnectionStringBuilder.ConnectionString)
+
+    if ($Credential) {
+        $Credential.Password.MakeReadOnly()
+        $SqlCredential = New-Object System.Data.SqlClient.SqlCredential($Credential.UserName,$Credential.Password)
+		$SqlConnection = New-Object System.Data.SqlClient.SqlConnection($SqlConnectionStringBuilder.ConnectionString,$SqlCredential)
+        #$SqlConnectionStringBuilder['Credential'] = $SqlCredential
+		#$SqlConnectionStringBuilder['Integrated Security'] = $false
+		#$SqlConnectionStringBuilder['User ID'] = $Credential.UserName
+		#$SqlConnectionStringBuilder['Password'] = $Credential.Password
+    } else {
+        $SqlConnectionStringBuilder['Integrated Security'] = $true
+		$SqlConnection = New-Object System.Data.SqlClient.SqlConnection($SqlConnectionStringBuilder.ConnectionString)
+    }
+    
     $SqlConnection.Open()
 
     $SqlCommand = New-Object System.Data.SqlClient.SqlCommand($CommandText,$SqlConnection)
