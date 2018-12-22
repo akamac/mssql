@@ -83,7 +83,7 @@ function Invoke-SqlDb {
             [void]$SqlCommandBuilder.GetUpdateCommand($true)
             [void]$SqlCommandBuilder.GetInsertCommand($true)
             $Count = $SqlDataAdapter.Update($DataSet)
-			Write-Verbose "$Count rows updated"
+            Write-Verbose "$Count rows updated"
         }
         BulkInsert {
             $BulkCopy = New-Object System.Data.SqlClient.SqlBulkCopy($SqlDataAdapter.SelectCommand.Connection)
@@ -106,11 +106,11 @@ function Invoke-SqlCommand {
     param(
         [string] $SqlServer = '(local)',
         [pscredential] $Credential,
-		[string] $Database,
+        [string] $Database,
         [Parameter(Mandatory,ParameterSetName='Command')]
         [string] $CommandText,
-		[ValidateSet('Reader','NonQuery','Scalar')]
-		[string] $CommandType = 'NonQuery'
+        [ValidateSet('Reader','NonQuery','Scalar')]
+        [string] $CommandType = 'NonQuery'
     )
     $SqlConnectionStringBuilder = New-Object System.Data.SqlClient.SqlConnectionStringBuilder
     $SqlConnectionStringBuilder['Persist Security Info'] = $false
@@ -121,42 +121,42 @@ function Invoke-SqlCommand {
     if ($Credential) {
         $Credential.Password.MakeReadOnly()
         $SqlCredential = New-Object System.Data.SqlClient.SqlCredential($Credential.UserName,$Credential.Password)
-		$SqlConnection = New-Object System.Data.SqlClient.SqlConnection($SqlConnectionStringBuilder.ConnectionString,$SqlCredential)
+        $SqlConnection = New-Object System.Data.SqlClient.SqlConnection($SqlConnectionStringBuilder.ConnectionString,$SqlCredential)
         #$SqlConnectionStringBuilder['Credential'] = $SqlCredential
-		#$SqlConnectionStringBuilder['Integrated Security'] = $false
-		#$SqlConnectionStringBuilder['User ID'] = $Credential.UserName
-		#$SqlConnectionStringBuilder['Password'] = $Credential.Password
+        #$SqlConnectionStringBuilder['Integrated Security'] = $false
+        #$SqlConnectionStringBuilder['User ID'] = $Credential.UserName
+        #$SqlConnectionStringBuilder['Password'] = $Credential.Password
     } else {
         $SqlConnectionStringBuilder['Integrated Security'] = $true
-		$SqlConnection = New-Object System.Data.SqlClient.SqlConnection($SqlConnectionStringBuilder.ConnectionString)
+        $SqlConnection = New-Object System.Data.SqlClient.SqlConnection($SqlConnectionStringBuilder.ConnectionString)
     }
     
     $SqlConnection.Open()
 
     $SqlCommand = New-Object System.Data.SqlClient.SqlCommand($CommandText,$SqlConnection)
-	switch ($CommandType) {
-		Reader {
-			$SqlDataReader = $SqlCommand.ExecuteReader()
-			$Result = New-Object System.Collections.ArrayList
-			[array]$ColumnName = $SqlDataReader.GetSchemaTable().ColumnName
-			$Row = New-Object Object[] $SqlDataReader.FieldCount
-			$ht = [ordered]@{}
-			while ($SqlDataReader.Read()) {
-				[void]$SqlDataReader.GetValues($Row)
-				for ($i = 0; $i -lt $Row.Count; ++$i) {
-					$ht[$ColumnName[$i]] = $Row[$i]
-				}
-				[void]$Result.Add((New-Object PSCustomObject -Property $ht))
-			}
-			$Result
-		}
-		NonQuery {
-			$SqlCommand.ExecuteNonQuery()
-		}
-		Scalar {
-			$SqlCommand.ExecuteScalar()
-		}
-	}
+    switch ($CommandType) {
+        Reader {
+            $SqlDataReader = $SqlCommand.ExecuteReader()
+            $Result = New-Object System.Collections.ArrayList
+            [array]$ColumnName = $SqlDataReader.GetSchemaTable().ColumnName
+            $Row = New-Object Object[] $SqlDataReader.FieldCount
+            $ht = [ordered]@{}
+            while ($SqlDataReader.Read()) {
+                [void]$SqlDataReader.GetValues($Row)
+                for ($i = 0; $i -lt $Row.Count; ++$i) {
+                    $ht[$ColumnName[$i]] = $Row[$i]
+                }
+                [void]$Result.Add((New-Object PSCustomObject -Property $ht))
+            }
+            $Result
+        }
+        NonQuery {
+            $SqlCommand.ExecuteNonQuery()
+        }
+        Scalar {
+            $SqlCommand.ExecuteScalar()
+        }
+    }
     $SqlConnection.Close()
 }
 
@@ -167,15 +167,17 @@ function Load-DataRows {
         [Parameter(Mandatory,ValueFromPipeline)]
         [array] $Data # array of PSCustomObject
     )
-    Begin { $DataTable = $DataSet.Tables['Table'] }
+    Begin {
+        $DataTable = $DataSet.Tables['Table'] 
+    }
     Process {
         foreach ($Obj in $Data) {
             $ArrayList = New-Object System.Collections.ArrayList
-		    $DataTable.Columns.ColumnName.ForEach({ [void]$ArrayList.Add($Obj.$_) })
+            $DataTable.Columns.ColumnName.ForEach({ [void]$ArrayList.Add($Obj.$_) })
             $DataTable.LoadDataRow($ArrayList.ToArray(),[System.Data.LoadOption]::Upsert)
             $ArrayList.Clear()
         }
-	    #Write-Verbose "$(@($Data).Count) rows loaded"
+        #Write-Verbose "$(@($Data).Count) rows loaded"
     }
 }
 # SIG # Begin signature block
